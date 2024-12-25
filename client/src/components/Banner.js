@@ -4,7 +4,7 @@ import {ArrowRightCircle} from "react-bootstrap-icons"
 import headerImg from "../assets/img/header-img.svg"
 import 'animate.css'
 import TrackVisibility from 'react-on-screen';
-import { HashLink } from 'react-router-hash-link';
+
 import {
   BrowserRouter as Router
 } from "react-router-dom";

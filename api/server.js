@@ -1,43 +1,59 @@
+const express = require("express");
+const cors = require("cors");
 const nodemailer = require("nodemailer");
-require("dotenv").config();
+require("dotenv").config(); // Load environment variables
 
-const contactEmail = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const app = express();
+const PORT = process.env.PORT || 5000;
 
-contactEmail.verify((error) => {
-  if (error) {
-    console.log(error);
-  } else {
-    console.log("Ready to Send");
-  }
-});
+// Middleware
+app.use(cors());
+app.use(express.json()); // Parse incoming JSON requests
 
-module.exports = async (req, res) => {
-  if (req.method === "POST") {
+// POST Route for Contact Form
+app.post("/api/contact", async (req, res) => {
+  try {
+    // Destructure form data
     const { firstName, lastName, email, phone, message } = req.body;
     const name = `${firstName} ${lastName}`;
-    const mail = {
-      from: name,
-      to: "sanjay100daysofcode@gmail.com",
+
+    // Configure SMTP Transporter
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      secure: false, 
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Email options
+    const mailOptions = {
+      from: `"${name}" <${email}>`,
+      to: "sanjay100daysofcode@gmail.com", 
       subject: "Contact Form Submission - Portfolio",
-      html: `<p>Name: ${name}</p>
-             <p>Email: ${email}</p>
-             <p>Phone: ${phone}</p>
-             <p>Message: ${message}</p>`,
+      html: `
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone:</strong> ${phone}</p>
+        <p><strong>Message:</strong></p>
+        <p>${message}</p>
+      `,
     };
 
-    try {
-      await contactEmail.sendMail(mail);
-      res.status(200).json({ success: true, message: "Message Sent" });
-    } catch (error) {
-      res.status(500).json({ success: false, message: "Failed to send email" });
-    }
-  } else {
-    res.status(405).json({ message: "Method Not Allowed" });
+    // Send Email
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log("Email sent: " + info.response);
+    res.status(200).json({ success: true, message: "Email sent successfully!" });
+  } catch (error) {
+    console.error("Error sending email:", error);
+    res.status(500).json({ success: false, message: "Email failed to send!" });
   }
-};
+});
+
+// Start Server
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});
