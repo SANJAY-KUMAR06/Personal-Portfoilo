@@ -29,7 +29,7 @@ export const Contact = () => {
     setButtonText("Sending...");
     
     try {
-      let response = await fetch(`${process.env.REACT_APP_API_URL}/contact`, {
+      let response = await fetch(`${process.env.REACT_APP_API_URL}/api/contact`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json;charset=utf-8",

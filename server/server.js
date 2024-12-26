@@ -52,3 +52,4 @@ app.post("/contact", (req, res) => {
     }
   });
 });
+module.exports = app;
