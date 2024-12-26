@@ -5,7 +5,9 @@ require("dotenv").config(); // To load environment variables from .env
 
 // server used to send send emails
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: "https://sanjay-portfoilo-silk.vercel.app",  // Allow requests from your client domain
+}));
 app.use(express.json());
 
 app.listen(5000, () => console.log("Server Running"));
