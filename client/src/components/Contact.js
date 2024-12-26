@@ -12,34 +12,44 @@ export const Contact = () => {
     phone: '',
     message: ''
   }
+  
   const [formDetails, setFormDetails] = useState(formInitialDetails);
   const [buttonText, setButtonText] = useState('Send');
   const [status, setStatus] = useState({});
 
   const onFormUpdate = (category, value) => {
-      setFormDetails({
-        ...formDetails,
-        [category]: value
-      })
+    setFormDetails({
+      ...formDetails,
+      [category]: value
+    })
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setButtonText("Sending...");
-    let response = await fetch("/api/server", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json;charset=utf-8",
-      },
-      body: JSON.stringify(formDetails),
-    });
-    setButtonText("Send");
-    let result = await response.json();
-    setFormDetails(formInitialDetails);
-    if (result.code === 200) {
-      setStatus({ succes: true, message: 'Message sent successfully'});
-    } else {
-      setStatus({ succes: false, message: 'Something went wrong, please try again later.'});
+    
+    try {
+      let response = await fetch(`${process.env.REACT_APP_API_URL}/contact`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+        },
+        body: JSON.stringify(formDetails),
+      });
+      
+      let result = await response.json();
+      setFormDetails(formInitialDetails);
+
+      if (result.success) {
+        setStatus({ success: true, message: 'Message sent successfully!' });
+      } else {
+        setStatus({ success: false, message: result.message || 'Something went wrong, please try again later.' });
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setStatus({ success: false, message: 'Network error. Please try again later.' });
+    } finally {
+      setButtonText("Send");
     }
   };
 
@@ -71,7 +81,7 @@ export const Contact = () => {
                       <input type="email" value={formDetails.email} placeholder="Email Address" onChange={(e) => onFormUpdate('email', e.target.value)} required/>
                     </Col>
                     <Col size={12} sm={6} className="px-1">
-                      <input type="tel" value={formDetails.phone} maxlength="10" placeholder="Phone No." onChange={(e) => onFormUpdate('phone', e.target.value)}/>
+                      <input type="tel" value={formDetails.phone} maxLength="10" placeholder="Phone No." onChange={(e) => onFormUpdate('phone', e.target.value)}/>
                     </Col>
                     <Col size={12} className="px-1">
                       <textarea rows="6" value={formDetails.message} placeholder="Message" onChange={(e) => onFormUpdate('message', e.target.value)}></textarea>
@@ -80,7 +90,7 @@ export const Contact = () => {
                     {
                       status.message &&
                       <Col>
-                        <p className={status.success === false ? "danger" : "success"}>{status.message}</p>
+                        <p className={status.success ? "success" : "danger"}>{status.message}</p>
                       </Col>
                     }
                   </Row>
